@@ -1,0 +1,258 @@
+name: CI pipeline
+
+on:
+  pull_request:
+    branches: [ development, master ]
+env:
+  GO111MODULE: on
+  GO_VERSION: 1.16.5
+  LINT_ARGS: -v --timeout 5m0s
+  ACTION_VERSION: v1.49
+  TEST_ARGS: -v -short -coverprofile=coverage.out
+  TEST_PATH: ./...
+jobs:
+  hadolint_job:
+    name: Hadolint job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v2.0.0
+        with:
+          dockerfile: Dockerfile
+
+  trivy_job:
+    name: Trivy job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Run Trivy repository scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          # this scan cannot use a config file
+          scan-type: fs
+          scan-ref: .
+          security-checks: vuln,secret,config
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Build an image from Dockerfile
+        run: docker build -t docker.io/syntio/syntb-template:${{ github.sha }} .
+
+      - name: Run Trivy container image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'docker.io/syntio/syntb-template:${{ github.sha }}'
+          exit-code: '1'
+          ignore-unfixed: true
+          # if you want to use a config file just add trivy-config: trivy.yaml
+
+  tflint_job:
+    name: Tflint job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v2
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint -f compact
+        working-directory: terraform
+
+  lint_job:
+    name: Lint job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git
+        run: git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Tidy
+        run: go mod tidy
+
+      - name: Go lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.49.0
+          args: ${{ env.LINT_ARGS }}
+          skip-pkg-cache: true
+          skip-build-cache: true
+
+  editor_config_job:
+    name: Editor config job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Run editor config check
+        run: |
+          npm install --save-dev editorconfig-checker
+          pwd
+          ./node_modules/.bin/editorconfig-checker .
+
+  test_job:
+    name: Test job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{env.GO_VERSION}}
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Tidy
+        run: go mod tidy
+
+      - name: Go test
+        run: go test ${{env.TEST_ARGS}} ${{env.TEST_PATH}}
+
+  licenses_check:
+    name: Licences check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{env.GO_VERSION}}
+
+      - name: Install Go licenses
+        run: go get github.com/google/go-licenses
+
+      - name: Run Go licenses check
+        run: go-licenses csv ./pkg/module_example/
+
+  sonarcloud_check:
+    name: Sonarcloud check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      - name: SonarCloud scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  upload_docker:
+    name: Upload docker image to nexus
+    needs: [ check_changelog_and_version ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Get the version from .ver file
+      - name: Set version variable
+        run: |
+          VER=$(cat .ver)
+          echo "VERSION=$VER" >> $GITHUB_ENV
+
+      # In case we want to append pull request number to the docker image tag
+      - name: Set pull number
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo "PULL_NUMBER=$pull_number" >> $GITHUB_ENV
+
+      # Login to Nexus repository
+      - name: Login
+        run: docker login -u ${{ secrets.NEXUS_USERNAME }} -p ${{ secrets.NEXUS_PASSWORD }} scratch.hub.syntio.xyz
+
+      # Build a tagged docker image
+      - name: Build
+        # Path is "." because CWD is root of our repository
+        run: docker build . --tag latest
+
+      # Tag the built image
+      - name: Tag
+        run: docker tag latest scratch.hub.syntio.xyz/template/template-image-name:${{ env.VERSION }}
+
+      # Push the tagged docker image
+      - name: Push
+        run: docker push scratch.hub.syntio.xyz/template/template-image-name:${{ env.VERSION }}
+
+  upload_zip:
+    name: Upload zip files to nexus
+    needs: [ check_changelog_and_version ]
+    runs-on: ubuntu-latest
+    # If there are multiple packages we want to zip and upload, we can use strategy matrix (basically for each)
+    # strategy:
+    #   matrix:
+    #     args: [['pkg/module_example', 'name_of_zip0.zip'], ['pkg/module_example1', 'name_of_zip1.zip]]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set version variable
+        run: |
+          VER=$(cat .ver)
+          echo "VERSION=$VER" >> $GITHUB_ENV
+      # In case we want to append pull number to the docker image tag
+
+      - name: Set pull number
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo "PULL_NUMBER=$pull_number" >> $GITHUB_ENV
+
+      - name: Set extension for url
+        run: |
+          if [ "${{ github.base_ref }}" == "master" ];
+          then
+            extension=""
+          else
+            extension="dev/"
+          fi
+          echo "EXTENSION=$extension" >> $GITHUB_ENV
+
+      - name: Zip and upload
+        run: |
+          zip name_of_zip.zip module_example_test.go
+          curl -u ${{ secrets.NEXUS_USERNAME }}:${{ secrets.NEXUS_PASSWORD }} --upload-file name_of_zip.zip https://nexus.syntio.xyz/repository/raw-hosted/template/${{ env.EXTENSION }}
+        working-directory: pkg/module_example
+        # If we used strategy matrix, instead of "name_of_zip.zip" use ${{ matrix.args[1] }} and replace the line above this one (line 177) with "working-directory: ${{ matrix.args[0] }}"
+
+  check_changelog_and_version:
+    name: Check changelog and version
+    needs: [ hadolint_job, trivy_job, tflint_job, lint_job, editor_config_job, test_job, licenses_check, sonarcloud_check ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v2.1
+
+      - name: Check whether CHANGELOG.md changed
+        if: contains(steps.changed-files.outputs.modified_files, 'CHANGELOG.md') == false
+        run: exit 1
+
+      - name: Check whether .ver changed (master only)
+        if: github.base_ref == 'master' && (contains(steps.changed-files.outputs.modified_files, '.ver') == false)
+        run: exit 1
