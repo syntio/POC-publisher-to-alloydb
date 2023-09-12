@@ -1,0 +1,9 @@
+destinationName: publisher-pubsub-destination
+destinationType: PubSub
+parameters:
+  ProjectID: syntio-labs-research
+  TopicID: publisher-orders
+  CountThreshold: 400
+  DelayThreshold: 10000000
+  NumOfGoroutines: 20
+  ByteThreshold: 150000000

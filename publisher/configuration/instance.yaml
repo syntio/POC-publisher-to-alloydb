@@ -1,0 +1,132 @@
+publisherName: publisher-orders
+sourceName: publisher-sqlserver-source
+destinationName: publisher-pubsub-destination
+serializationType: Avro
+encryptionEnabled: false
+encryptionType: Aes256
+fetcherConfig:
+  useNativeDriver: true
+  fetchingThreadsNO: 4
+  queryIncrementType: MONTH
+  queryIncrementValue: 2
+  initialFetchValue: 2013-01-01 11:00:00
+  dataSeparatorChar: ";"
+businessObject:
+  description: "Demo Publisher - orders"
+  objectGroup: "orders"
+  definition:
+    - OrderID
+    - OrderDate
+    - ExpectedDeliveryDate
+    - CustomerPurchaseOrderNumber
+    - IsUndersupplyBackordered
+    - OrderComments
+    - DeliveryInstructions
+    - OrderInternalComments
+    - LastEditedWhen
+    - Customer:
+        - CustomerID
+        - CustomerName
+        - CreditLimit
+        - AccountOpenedDate
+        - StandardDiscountPercentage
+        - IsStatementSent
+        - IsOnCreditHold
+        - PaymentDays
+        - CustomerPhoneNumber
+        - CustomerFaxNumber
+        - DeliveryRun
+        - RunPosition
+        - WebsiteURL
+        - DeliveryAddressLine1
+        - DeliveryAddressLine2
+        - DeliveryPostalCode
+        - PostalAddressLine1
+        - PostalAddressLine2
+        - PostalPostalCode
+        - CustomerLastEditedBy
+        - CustomerValidFrom
+        - CustomerValidTo
+    - DeliveryMethod:
+        - DeliveryMethodID
+        - DeliveryMethodName
+        - DeliveryMethodLastValidFrom
+        - DeliveryMethodLastValidTo
+    - SalesPerson:
+        - SalesPersonID
+        - FullName
+        - PreferredName
+        - SearchName
+        - IsPermittedToLogon
+        - LogonName
+        - IsExternalLogonProvider
+        - HashedPassword
+        - IsSystemUser
+        - IsEmployee
+        - IsSalesperson
+        - UserPreferences
+        - SalesPersonPhoneNumber
+        - SalesPersonFaxNumber
+        - EmailAddress
+        - SalesPersonCustomFields
+        - OtherLanguages
+        - SalespersonValidFrom
+        - SalespersonValidTo
+    - OrderLines:
+        - OrderLineID
+        - Description
+        - Quantity
+        - UnitPrice
+        - TaxRate
+        - PickedQuantity
+        - PickingCompletedWhen
+        - OrderLineLastEditedWhen
+        - StockItem:
+           - StockItemID
+           - StockItemName
+           - Brand
+           - Size
+           - LeadTimeDays
+           - QuantityPerOuter
+           - IsChillerStock
+           - Barcode
+           - RecommendedRetailPrice
+           - TypicalWeightPerUnit
+           - MarketingComments
+           - StockItemsInternalComments
+           - StockItemsCustomFields
+           - Tags
+           - SearchDetails
+           - StockItemsValidFrom
+           - StockItemsValidTo
+        - PackageType:
+           - PackageTypeID
+           - PackageTypeName
+           - PackageTypeValidFrom
+           - PackageTypeValidTo
+  arrayElements:
+    - OrderLines
+  groupElements:
+    - OrderID
+  keyElements:
+    - OrderID
+    - CustomerID
+    - LastEditedWhen
+  idElements:
+    - OrderID
+    - CustomerID
+  query: SELECT o.OrderID, o.OrderDate, o.ExpectedDeliveryDate, o.CustomerPurchaseOrderNumber, o.IsUndersupplyBackordered, o.Comments AS OrderComments, o.DeliveryInstructions, o.InternalComments AS OrderInternalComments, o.LastEditedWhen,
+         c.CustomerID, c.CustomerName, c.CreditLimit, c.AccountOpenedDate, c.StandardDiscountPercentage, c.IsStatementSent, c.IsOnCreditHold, c.PaymentDays, c.PhoneNumber AS CustomerPhoneNumber, c.FaxNumber AS CustomerFaxNumber, c.DeliveryRun, c.RunPosition, c.WebsiteURL, c.DeliveryAddressLine1, c.DeliveryAddressLine2, c.DeliveryPostalCode, c.PostalAddressLine1, c.PostalAddressLine2, c.PostalPostalCode, c.ValidFrom AS CustomerValidFrom, c.ValidTo AS CustomerValidTo,
+         d.DeliveryMethodID, d.DeliveryMethodName, d.ValidFrom AS DeliveryMethodLastValidFrom, d.ValidTo AS DeliveryMethodLastValidTo,
+         p.PersonID AS SalesPersonID, p.FullName, p.PreferredName, p.SearchName, p.IsPermittedToLogon, p.LogonName, p.IsExternalLogonProvider, p.HashedPassword, p.IsSystemUser, p.IsEmployee, p.IsSalesperson, p.UserPreferences, p.PhoneNumber AS SalesPersonPhoneNumber, p.FaxNumber AS SalesPersonFaxNumber, p.EmailAddress, p.CustomFields AS SalesPersonCustomFields, p.OtherLanguages, p.ValidFrom AS SalespersonValidFrom, p.ValidTo AS SalespersonValidTo,
+         ol.OrderLineID, ol.Description, ol.Quantity, ol.UnitPrice, ol.TaxRate, ol.PickedQuantity, ol.PickingCompletedWhen, ol.LastEditedWhen as OrderLineLastEditedWhen,
+         si.StockItemID, si.StockItemName, si.Brand, si.[Size], si.LeadTimeDays, si.QuantityPerOuter, si.IsChillerStock, si.Barcode, si.RecommendedRetailPrice, si.TypicalWeightPerUnit, si.MarketingComments, si.InternalComments AS StockItemsInternalComments, si.CustomFields AS StockItemsCustomFields, si.Tags, si.SearchDetails, si.ValidFrom AS StockItemsValidFrom, si.ValidTo AS StockItemsValidTo,
+         pt.PackageTypeID, pt.PackageTypeName, pt.ValidFrom AS PackageTypeValidFrom, pt.ValidTo AS PackageTypeValidTo
+         FROM WideWorldImporters.Sales.Orders o
+         LEFT JOIN WideWorldImporters.Sales.Customers c ON o.CustomerID = c.CustomerID
+         LEFT JOIN WideWorldImporters.Application.DeliveryMethods d ON c.DeliveryMethodID = d.DeliveryMethodID
+         LEFT JOIN WideWorldImporters.Application.People p ON o.SalespersonPersonID = p.PersonID
+         INNER JOIN WideWorldImporters.Sales.OrderLines ol ON o.OrderID = ol.OrderID
+         LEFT JOIN WideWorldImporters.Warehouse.StockItems si ON ol.StockItemID = si.StockItemID
+         LEFT JOIN WideWorldImporters.Warehouse.PackageTypes pt ON ol.PackageTypeID = pt.PackageTypeID
+         WHERE o.LastEditedWhen >= {{ .FetchFrom }} AND o.LastEditedWhen < {{ .FetchTo }};

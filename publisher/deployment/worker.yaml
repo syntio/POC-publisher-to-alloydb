@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  worker-orders:
+    image: syntioinc/dataphos-publisher-worker:v0.6.0
+    command: ["1"]
+    networks:
+      - publisher-network
+    volumes:
+      - ../secrets/pubsub-sa-key.json:/var/secrets/google/key.json
+    env_file:
+      - ../environment/environment_worker.env
+      - ../environment/environment_metadata.env
+      - ../environment/environment_manager.env
+    secrets:
+      - gcp-credentials
+
+secrets:
+  gcp-credentials:
+    file: ../secrets/pubsub-sa-key.json
+
+networks:
+  publisher-network:
+    name: publisher_net

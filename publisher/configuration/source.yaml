@@ -1,0 +1,7 @@
+sourceName: publisher-sqlserver-source
+sourceType: SqlServer
+host: <host>
+port: 1433
+databaseName: WideWorldImporters
+username: <username>
+password: <password>
