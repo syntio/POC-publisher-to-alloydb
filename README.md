@@ -1,4 +1,4 @@
-# Ingesting data from Publisher to AlloyDB
+# Ingesting data from SQLServer to AlloyDB using Dataphos Publisher
 
 This repository contains Docker Compose, configuration, and source code files needed for running a data pipeline from an on-prem SQLServer database to GCP AlloyDB.
 
