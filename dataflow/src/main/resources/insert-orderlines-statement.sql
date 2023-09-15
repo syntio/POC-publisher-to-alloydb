@@ -1,4 +1,5 @@
 INSERT INTO orderlines3 (
+    OrderID,
     Description,
     OrderLineID,
     OrderLineLastEditedWhen,
@@ -29,6 +30,7 @@ INSERT INTO orderlines3 (
     TaxRate,
     UnitPrice
 ) VALUES (
+    ?,
     ?,
     ?,
     to_timestamp(?, 'YYYY-MM-DDTHH:MI:SSZ'),

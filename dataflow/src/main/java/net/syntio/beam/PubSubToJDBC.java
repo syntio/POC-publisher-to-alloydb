@@ -56,7 +56,8 @@ public class PubSubToJDBC {
                     flatten(orderLine, "PackageType");
                     flatten(orderLine, "StockItem");
                     // Add the foreign key.
-                    orderLine.addProperty("orderid", orderId);
+                    orderLine.addProperty("OrderID", orderId);
+
                     // Turn all "null" occurrences to null.
                     removeNull(orderLine);
 
