@@ -38,7 +38,13 @@ public interface PubSubToJDBCOptions extends DataflowPipelineOptions {
 
     @Description("Path to the SQL statement to execute against the database.")
     @Validation.Required
-    String getStatementPath();
+    String getOrdersStatementPath();
 
-    void setStatementPath(String statementPath);
+    void setOrdersStatementPath(String statementPath);
+
+    @Description("Second Path to the SQL statement to execute against the database.")
+    @Validation.Required
+    String getOrderLinesStatementPath();
+
+    void setOrderLinesStatementPath(String statementPath);
 }
