@@ -3,12 +3,11 @@ sourceName: publisher-sqlserver-source
 destinationName: publisher-pubsub-destination
 serializationType: Avro
 encryptionEnabled: false
-encryptionType: Aes256
 fetcherConfig:
   useNativeDriver: true
   fetchingThreadsNO: 4
   queryIncrementType: MONTH
-  queryIncrementValue: 2
+  queryIncrementValue: 1
   initialFetchValue: 2013-01-01 11:00:00
   dataSeparatorChar: ";"
 businessObject:
