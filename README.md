@@ -6,6 +6,8 @@ Docker Compose and configuration files for running Publisher are located in the 
 
 An Apache Beam application for ingesting data from Pub/Sub to AlloyDB is located in the [dataflow](/dataflow/) directory.
 
+Example SQL SELECT queries to test AlloyDB performance are located in the [order_queries.sql](/alloydb/queries/order_queries.sql) file.
+
 ## Publisher
 
 Dataphos Publisher is used to ingest data from an on-prem SQLServer database and publish business objects to Pub/Sub.
