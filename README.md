@@ -2,9 +2,9 @@
 
 This repository contains Docker Compose, configuration, and source code files needed for running a data pipeline from an on-prem SQLServer database to GCP AlloyDB.
 
-Docker Compose and configuration files for running Publisher are located in the [publisher](/publisher/) directory. 
+Docker Compose and configuration files for running Publisher are located in the [publisher](/publisher/) directory.
 
-An Apache Beam application for ingesting data from Pub/Sub to AlloyDB is located in the [dataflow](/dataflow/) directory. 
+An Apache Beam application for ingesting data from Pub/Sub to AlloyDB is located in the [dataflow](/dataflow/) directory.
 
 ## Publisher
 
@@ -175,3 +175,52 @@ Create the instance:
 ```
 
 Now, run the worker as previously decribed.
+
+
+## Dataflow
+Dataflow is used to consume data from Google Pub/Sub and store it into two denormalized tables on Google AlloyDB.
+
+The pipeline reads avro records, converts them to fill SQL statements for inserting them into AlloyDB, and executes the statements.
+
+### AlloyDB Destination
+An AlloyDB instance was used where two tables were created: `orders` and `orderlines`.
+
+### Configuration
+The Dataflow job expects a number of parameters to be configured. These can be grouped in four groups:
+Beam-specific parameters:
+- `streaming` - Boolean flag enabling streaming mode.
+- `runner` - The pipeline runner to use. Set to `DataflowRunner` to run on Dataflow.
+GCP specific parameters for running on Dataflow:
+- `project` - The project ID for your Google Cloud Project.
+- `region` - The Google Compute Engine region to create the job.
+- `tempLocation` - Path for temporary files. Must be a valid Google Cloud Storage URL that begins with gs://.
+- `stagingLocation` - Cloud Storage bucket path for staging your binary and any temporary files. Must be a valid Cloud Storage URL that begins with gs://.
+IO specific parameters:
+- `subscription` - Pub/Sub subscription name from which messages are consumed. Has to be in the format `projects/PROJECT/subscriptions/SUBSCRIPTION`
+- `databaseUrl` - URL of the AlloyDB, in the format `jdbc:postgresql://ALLOYDB_INSTANCE_PRIVATE_IP:5432/postgres`
+- `username` - Database username. Optional, as it is `postgres` by default.
+- `password` - Password for the database user.
+- `ordersStatementPath` - Path to the file containing the statement for inserting into the `orders` table.
+- `orderLinesStatementPath` - Path to the file containing the statement for inserting into the `orderlines` table.
+
+### Running
+> The job should be in the same VPC as the AlloyDB, which will be the case if running in the same region with default conifguration. For setting up a different VPC, follow the [documentation](https://cloud.google.com/dataflow/docs/guides/specifying-networks).
+To start the job, set the referenced environment variables, and run:
+```bash
+mvn compile exec:java \
+  -Dexec.mainClass=net.syntio.beam.PubSubToJDBC \
+  -Dexec.cleanupDaemonThreads=false \
+  -Dexec.args=" \
+    --streaming \
+    --project=$PROJECT \
+    --region=$REGION \
+    --tempLocation=$TEMP_LOCATION \
+    --stagingLocation=$STAGING_LOCATION \
+    --subscription=$SUBSCRIPTION_NAME \
+    --ordersStatementPath=src/main/resources/insert-orders-statement.sql \
+    --orderLinesStatementPath=src/main/resources/insert-orderlines-statement.sql \
+    --databaseUrl=jdbc:postgresql://$ALLOYDB_IP:5432/postgres \
+    --username=postgres \
+    --password=$PASSWORD \
+    --runner=DataflowRunner"
+```

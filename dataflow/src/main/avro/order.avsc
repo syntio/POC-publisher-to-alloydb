@@ -1,0 +1,398 @@
+{
+  "type": "record",
+  "name": "Order",
+  "namespace": "net.syntio.beam.models",
+  "fields": [
+    {
+      "name": "Customer",
+      "type": {
+        "type": "record",
+        "name": "Customer",
+        "fields": [
+          {
+            "name": "AccountOpenedDate",
+            "type": "string"
+          },
+          {
+            "name": "CreditLimit",
+            "type": "string"
+          },
+          {
+            "name": "CustomerFaxNumber",
+            "type": "string"
+          },
+          {
+            "name": "CustomerID",
+            "type": "int"
+          },
+          {
+            "name": "CustomerLastEditedBy",
+            "type": "string"
+          },
+          {
+            "name": "CustomerName",
+            "type": "string"
+          },
+          {
+            "name": "CustomerPhoneNumber",
+            "type": "string"
+          },
+          {
+            "name": "CustomerValidFrom",
+            "type": "string"
+          },
+          {
+            "name": "CustomerValidTo",
+            "type": "string"
+          },
+          {
+            "name": "DeliveryAddressLine1",
+            "type": "string"
+          },
+          {
+            "name": "DeliveryAddressLine2",
+            "type": "string"
+          },
+          {
+            "name": "DeliveryPostalCode",
+            "type": "string"
+          },
+          {
+            "name": "DeliveryRun",
+            "type": "string"
+          },
+          {
+            "name": "IsOnCreditHold",
+            "type": "string"
+          },
+          {
+            "name": "IsStatementSent",
+            "type": "string"
+          },
+          {
+            "name": "PaymentDays",
+            "type": "int"
+          },
+          {
+            "name": "PostalAddressLine1",
+            "type": "string"
+          },
+          {
+            "name": "PostalAddressLine2",
+            "type": "string"
+          },
+          {
+            "name": "PostalPostalCode",
+            "type": "string"
+          },
+          {
+            "name": "RunPosition",
+            "type": "string"
+          },
+          {
+            "name": "StandardDiscountPercentage",
+            "type": "string"
+          },
+          {
+            "name": "WebsiteURL",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CustomerPurchaseOrderNumber",
+      "type": "string"
+    },
+    {
+      "name": "DeliveryInstructions",
+      "type": "string"
+    },
+    {
+      "name": "DeliveryMethod",
+      "type": {
+        "type": "record",
+        "name": "DeliveryMethod",
+        "fields": [
+          {
+            "name": "DeliveryMethodID",
+            "type": "int"
+          },
+          {
+            "name": "DeliveryMethodLastValidFrom",
+            "type": "string"
+          },
+          {
+            "name": "DeliveryMethodLastValidTo",
+            "type": "string"
+          },
+          {
+            "name": "DeliveryMethodName",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExpectedDeliveryDate",
+      "type": "string"
+    },
+    {
+      "name": "IsUndersupplyBackordered",
+      "type": "string"
+    },
+    {
+      "name": "LastEditedWhen",
+      "type": "string"
+    },
+    {
+      "name": "OrderComments",
+      "type": "string"
+    },
+    {
+      "name": "OrderDate",
+      "type": "string"
+    },
+    {
+      "name": "OrderID",
+      "type": "int"
+    },
+    {
+      "name": "OrderInternalComments",
+      "type": "string"
+    },
+    {
+      "name": "OrderLines",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderLines",
+          "fields": [
+            {
+              "name": "Description",
+              "type": "string"
+            },
+            {
+              "name": "OrderLineID",
+              "type": "int"
+            },
+            {
+              "name": "OrderLineLastEditedWhen",
+              "type": "string"
+            },
+            {
+              "name": "PackageType",
+              "type": {
+                "type": "record",
+                "name": "PackageType",
+                "namespace": "net.syntio.beam.models",
+                "fields": [
+                  {
+                    "name": "PackageTypeID",
+                    "type": "int"
+                  },
+                  {
+                    "name": "PackageTypeName",
+                    "type": "string"
+                  },
+                  {
+                    "name": "PackageTypeValidFrom",
+                    "type": "string"
+                  },
+                  {
+                    "name": "PackageTypeValidTo",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "PickedQuantity",
+              "type": "int"
+            },
+            {
+              "name": "PickingCompletedWhen",
+              "type": "string"
+            },
+            {
+              "name": "Quantity",
+              "type": "int"
+            },
+            {
+              "name": "StockItem",
+              "type": {
+                "type": "record",
+                "name": "StockItem",
+                "namespace": "net.syntio.beam.models",
+                "fields": [
+                  {
+                    "name": "Barcode",
+                    "type": "string"
+                  },
+                  {
+                    "name": "Brand",
+                    "type": "string"
+                  },
+                  {
+                    "name": "IsChillerStock",
+                    "type": "string"
+                  },
+                  {
+                    "name": "LeadTimeDays",
+                    "type": "int"
+                  },
+                  {
+                    "name": "MarketingComments",
+                    "type": "string"
+                  },
+                  {
+                    "name": "QuantityPerOuter",
+                    "type": "int"
+                  },
+                  {
+                    "name": "RecommendedRetailPrice",
+                    "type": "string"
+                  },
+                  {
+                    "name": "SearchDetails",
+                    "type": "string"
+                  },
+                  {
+                    "name": "Size",
+                    "type": "string"
+                  },
+                  {
+                    "name": "StockItemID",
+                    "type": "int"
+                  },
+                  {
+                    "name": "StockItemName",
+                    "type": "string"
+                  },
+                  {
+                    "name": "StockItemsCustomFields",
+                    "type": "string"
+                  },
+                  {
+                    "name": "StockItemsInternalComments",
+                    "type": "string"
+                  },
+                  {
+                    "name": "StockItemsValidFrom",
+                    "type": "string"
+                  },
+                  {
+                    "name": "StockItemsValidTo",
+                    "type": "string"
+                  },
+                  {
+                    "name": "Tags",
+                    "type": "string"
+                  },
+                  {
+                    "name": "TypicalWeightPerUnit",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "TaxRate",
+              "type": "string"
+            },
+            {
+              "name": "UnitPrice",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SalesPerson",
+      "type": {
+        "type": "record",
+        "name": "SalesPerson",
+        "fields": [
+          {
+            "name": "EmailAddress",
+            "type": "string"
+          },
+          {
+            "name": "FullName",
+            "type": "string"
+          },
+          {
+            "name": "HashedPassword",
+            "type": "string"
+          },
+          {
+            "name": "IsEmployee",
+            "type": "string"
+          },
+          {
+            "name": "IsExternalLogonProvider",
+            "type": "string"
+          },
+          {
+            "name": "IsPermittedToLogon",
+            "type": "string"
+          },
+          {
+            "name": "IsSalesperson",
+            "type": "string"
+          },
+          {
+            "name": "IsSystemUser",
+            "type": "string"
+          },
+          {
+            "name": "LogonName",
+            "type": "string"
+          },
+          {
+            "name": "OtherLanguages",
+            "type": "string"
+          },
+          {
+            "name": "PreferredName",
+            "type": "string"
+          },
+          {
+            "name": "SalesPersonCustomFields",
+            "type": "string"
+          },
+          {
+            "name": "SalesPersonFaxNumber",
+            "type": "string"
+          },
+          {
+            "name": "SalesPersonID",
+            "type": "int"
+          },
+          {
+            "name": "SalesPersonPhoneNumber",
+            "type": "string"
+          },
+          {
+            "name": "SalespersonValidFrom",
+            "type": "string"
+          },
+          {
+            "name": "SalespersonValidTo",
+            "type": "string"
+          },
+          {
+            "name": "SearchName",
+            "type": "string"
+          },
+          {
+            "name": "UserPreferences",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}
