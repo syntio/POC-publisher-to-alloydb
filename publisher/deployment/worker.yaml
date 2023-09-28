@@ -2,6 +2,7 @@ version: "3.9"
 services:
   worker-orders:
     image: syntioinc/dataphos-publisher-worker:v1.0.0
+    restart: on-failure
     command: ["publisher-orders"]
     networks:
       - publisher-network
