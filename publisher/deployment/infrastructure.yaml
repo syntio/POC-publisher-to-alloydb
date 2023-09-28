@@ -18,9 +18,9 @@ services:
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
       
-  initdb:
-    image: syntioinc/dataphos-publisher-initdb:v0.6.0
-    container_name: initdb
+  publisher-initdb:
+    image: syntioinc/dataphos-publisher-initdb:v1.0.0
+    container_name: publisher-initdb
     restart: on-failure
     networks:
       - publisher-network
@@ -30,32 +30,32 @@ services:
     env_file:
       - ../environment/environment_metadata.env
       
-  manager:
-    image: syntioinc/dataphos-publisher-manager:v0.6.0
-    container_name: manager
+  publisher-manager:
+    image: syntioinc/dataphos-publisher-manager:v1.0.0
+    container_name: publisher-manager
     ports:
       - "8080:8080"
     networks:
       - publisher-network
     depends_on:
-      - initdb
+      - publisher-initdb
     env_file:
       - ../environment/environment_manager.env
       - ../environment/environment_metadata.env
       
-  avro-schema-generator:
-    container_name: avro-schema-generator
-    image: syntioinc/dataphos-publisher-avro-schema-generator:v0.1.1
+  publisher-avro-schema-generator:
+    container_name: publisher-avro-schema-generator
+    image: syntioinc/dataphos-publisher-avro-schema-generator:v1.0.0
     networks:
       - publisher-network
       
-  data-fetcher:
-    image: syntioinc/dataphos-publisher-data-fetcher:v0.2.3
-    container_name: data-fetcher
+  publisher-data-fetcher:
+    image: syntioinc/dataphos-publisher-data-fetcher:v1.0.0
+    container_name: publisher-data-fetcher
     env_file:
       - ../environment/environment_fetcher.env
     depends_on:
-      - manager
+      - publisher-manager
     networks:
       - publisher-network
 

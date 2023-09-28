@@ -1,8 +1,8 @@
 version: "3.9"
 services:
   worker-orders:
-    image: syntioinc/dataphos-publisher-worker:v0.6.0
-    command: ["1"]
+    image: syntioinc/dataphos-publisher-worker:v1.0.0
+    command: ["publisher-orders"]
     networks:
       - publisher-network
     volumes:
