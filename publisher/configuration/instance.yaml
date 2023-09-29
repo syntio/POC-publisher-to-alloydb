@@ -6,6 +6,7 @@ encryptionEnabled: false
 fetcherConfig:
   useNativeDriver: true
   fetchingThreadsNO: 4
+  useReflectTypeFetch: true
   queryIncrementType: MONTH
   queryIncrementValue: 1
   initialFetchValue: 2013-01-01 11:00:00
@@ -122,10 +123,10 @@ businessObject:
          si.StockItemID, si.StockItemName, si.Brand, si.[Size], si.LeadTimeDays, si.QuantityPerOuter, si.IsChillerStock, si.Barcode, si.RecommendedRetailPrice, si.TypicalWeightPerUnit, si.MarketingComments, si.InternalComments AS StockItemsInternalComments, si.CustomFields AS StockItemsCustomFields, si.Tags, si.SearchDetails, si.ValidFrom AS StockItemsValidFrom, si.ValidTo AS StockItemsValidTo,
          pt.PackageTypeID, pt.PackageTypeName, pt.ValidFrom AS PackageTypeValidFrom, pt.ValidTo AS PackageTypeValidTo
          FROM WideWorldImporters.Sales.Orders o
+         JOIN WideWorldImporters.Sales.OrderLines ol ON o.OrderID = ol.OrderID
          LEFT JOIN WideWorldImporters.Sales.Customers c ON o.CustomerID = c.CustomerID
          LEFT JOIN WideWorldImporters.Application.DeliveryMethods d ON c.DeliveryMethodID = d.DeliveryMethodID
          LEFT JOIN WideWorldImporters.Application.People p ON o.SalespersonPersonID = p.PersonID
-         INNER JOIN WideWorldImporters.Sales.OrderLines ol ON o.OrderID = ol.OrderID
          LEFT JOIN WideWorldImporters.Warehouse.StockItems si ON ol.StockItemID = si.StockItemID
          LEFT JOIN WideWorldImporters.Warehouse.PackageTypes pt ON ol.PackageTypeID = pt.PackageTypeID
          WHERE o.LastEditedWhen >= {{ .FetchFrom }} AND o.LastEditedWhen < {{ .FetchTo }};
